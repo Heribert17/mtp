@@ -10,19 +10,19 @@
       
       
       
-        <link rel="next" href="access/">
+        <link rel="next" href="linux_access/">
       
       
       <link rel="icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.9">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
     
     
       
-        <title>win_mtp</title>
+        <title>mtp</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.78cf6014.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.342714a4.min.css">
       
       
 
@@ -43,7 +43,7 @@
     
       <link rel="stylesheet" href="assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -55,9 +55,6 @@
   
     <body dir="ltr">
   
-    
-    
-      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -81,32 +78,35 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="win_mtp" class="md-header__button md-logo" aria-label="win_mtp" data-md-component="logo">
+    <a href="." title="mtp" class="md-header__button md-logo" aria-label="mtp" data-md-component="logo">
       
   
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
       
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
     </label>
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            win_mtp
+            mtp
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Documentation
+              documentation
             
           </span>
         </div>
       </div>
     </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
     
@@ -136,13 +136,13 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="win_mtp" class="md-nav__button md-logo" aria-label="win_mtp" data-md-component="logo">
+    <a href="." title="mtp" class="md-nav__button md-logo" aria-label="mtp" data-md-component="logo">
       
   
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    win_mtp
+    mtp
   </label>
   
   <ul class="md-nav__list" data-md-scrollfix>
@@ -154,6 +154,7 @@
     
   
   
+  
     <li class="md-nav__item md-nav__item--active">
       
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
@@ -163,8 +164,10 @@
         <label class="md-nav__link md-nav__link--active" for="__toc">
           
   
+  
   <span class="md-ellipsis">
-    Documentation
+    documentation
+    
   </span>
   
 
@@ -174,8 +177,10 @@
       <a href="." class="md-nav__link md-nav__link--active">
         
   
+  
   <span class="md-ellipsis">
-    Documentation
+    documentation
+    
   </span>
   
 
@@ -213,9 +218,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#win_mtp" class="md-nav__link">
+  <a href="#mtp" class="md-nav__link">
     <span class="md-ellipsis">
-      win_mtp
+      mtp
     </span>
   </a>
   
@@ -243,12 +248,15 @@
   
   
   
+  
     <li class="md-nav__item">
-      <a href="access/" class="md-nav__link">
+      <a href="linux_access/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
-    access
+    linux_access
+    
   </span>
   
 
@@ -262,12 +270,37 @@
   
   
   
+  
+    <li class="md-nav__item">
+      <a href="win_access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    win_access
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
     <li class="md-nav__item">
       <a href="dialog/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
     dialog
+    
   </span>
   
 
@@ -319,9 +352,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#win_mtp" class="md-nav__link">
+  <a href="#mtp" class="md-nav__link">
     <span class="md-ellipsis">
-      win_mtp
+      mtp
     </span>
   </a>
   
@@ -351,14 +384,16 @@
                   
 
 
-  <h1>Documentation</h1>
+
+  <h1>documentation</h1>
 
 <p>This site contains the project documentation for the
-<code>win_mtp</code> project that is a module to access the filesystem of
-MTP devices like Smartphones under Windows.</p>
+<code>mtp</code> project that is a module to access the filesystem of
+MTP devices like Smartphones under Windows and Linux.</p>
 <h2 id="table-of-contents">Table Of Contents</h2>
 <ol>
-<li><a href="access/">Access API</a></li>
+<li><a href="win_access/">Windows Access API</a></li>
+<li><a href="linux_access/">Linux Access API</a></li>
 <li><a href="dialog/">Dialog API</a></li>
 </ol>
 <p>Quickly find what you're looking for depending on
@@ -371,28 +406,35 @@ For examples look at the modules under the tests directory.</p>
 
 
 
-<a id="win_mtp"></a>
-  <div class="doc doc-contents first">
-  
-      <p>Access MPT devices like Smartphones under Windows.
+<a id="mtp"></a>
+    <div class="doc doc-contents first">
+
+        <p>Access MPT devices like Smartphones under Windows and Linux.
 Some file access methods like reading/writing files, listing directories
 and creating/deleting directories are implemented.</p>
+<p>Version: 2.0.4</p>
 <p>Modules needed by this package:</p>
-<ul>
-<li>comtypes</li>
-</ul>
+<p>For Windows
+    - comtypes</p>
 <p>Operating systems:</p>
 <ul>
 <li>Windows 10 and above</li>
-<li>If you look for Linux/Mac modules python-mtp might be the right module for you.</li>
+<li>Linux (Gnome and KDE)</li>
 </ul>
 <p>Implemented modules:</p>
 <ul>
-<li>'access': Provide several methods to access the file system on MTP devices.</li>
-<li>'dialog': Provides a class to get a directory selection dialog for MTP devices.</li>
+<li>'win_access': Provide several methods to access the file system on MTP devices under Windows.</li>
+<li>'linux_access': Provide several methods to access the file system on MTP devices under Linux.</li>
+<li>'dialog': Provides a class to get a directory selection dialog for MTP devices with tkinter.</li>
 </ul>
 
-  
+
+
+
+
+
+
+
 
   <div class="doc doc-children">
 
@@ -408,11 +450,18 @@ and creating/deleting directories are implemented.</p>
 
   </div>
 
-  </div>
+    </div>
 
 </div><h2 id="acknowledgements">Acknowledgements</h2>
 <p>I want to thank Kaspar Nagus for his work on: https://github.com/KasparNagu/PortableDevices
 This was the base for my own modules</p>
+
+
+
+
+
+
+
 
 
 
@@ -423,6 +472,7 @@ This was the base for my own modules</p>
             </div>
           
           
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
       </main>
@@ -451,10 +501,12 @@ This was the base for my own modules</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+      
+      <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.6c14ae12.min.js"></script>
+      <script src="assets/javascripts/bundle.13a4f30d.min.js"></script>
       
     
   </body>
