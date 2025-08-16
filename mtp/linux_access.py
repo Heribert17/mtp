@@ -8,7 +8,7 @@ libmtp.
 
 Author:  Heribert Füchtenhans
 
-Version: 2025.6.26
+Version: 2025.6.29
 
 For examples please look into the examples directory.
 
@@ -235,7 +235,7 @@ class PortableDevice:
 
 
 # -------------------------------------------------------------------------------------------------
-class PortableDeviceContent:  # pylint: disable=too-many-instance-attributes
+class PortableDeviceContent:
     """Class for one file, directory or storage with it's properties.
     This instances of this class are created intern, please only use the methods and attributes
 
@@ -652,7 +652,7 @@ def get_portable_devices() -> list[PortableDevice]:
             _init_libmtp()
         if _libmtp is None:
             raise OSError("Can't init libmtp")
-        for entry in _libmtp.detect_devices():  # type: ignore
+        for entry in _libmtp.detect_devices():
             dev = PortableDevice(entry)
             # Device is not ready if we don't get a content
             if len(dev.get_content()) != 0:

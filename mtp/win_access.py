@@ -4,7 +4,7 @@ Implements access to basic functions of the Windows WPD API
 
 Author:  Heribert Füchtenhans
 
-Version: 2025.6.28
+Version: 2025.08.15
 
 For examples please look into the examples directory.
 
@@ -59,18 +59,16 @@ import os
 import os.path
 from typing import Any, IO, Callable
 import contextlib
-import comtypes
-import comtypes.client
-import comtypes.automation
+import comtypes  # pyright: ignore[reportMissingImports]
+import comtypes.client  # pyright: ignore[reportMissingImports]
+import comtypes.automation  # pyright: ignore[reportMissingImports]
 
 
 # Generate .py files from dlls for comtypes
-comtypes.client.gen_dir = os.path.join(os.environ["Temp"], "comtypes")
-os.makedirs(comtypes.client.gen_dir, exist_ok=True)
 comtypes.client.GetModule("portabledeviceapi.dll")
 comtypes.client.GetModule("portabledevicetypes.dll")
-from comtypes.gen import PortableDeviceApiLib as port  # pyright: ignore[reportAttributeAccessIssue]
-from comtypes.gen import PortableDeviceTypesLib as types  # pyright: ignore[reportAttributeAccessIssue]
+import comtypes.gen.PortableDeviceApiLib as port  # pyright: ignore[reportMissingImports]
+import comtypes.gen.PortableDeviceTypesLib as types  # pyright: ignore[reportMissingImports]
 
 
 # ComType Verweise anlegen

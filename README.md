@@ -28,6 +28,10 @@ dialog.py implements a directory searcher in tkinter that shows the attached MTP
 
 
 # Changelog
+* 2.0.7
+    * Comtypes files are now generated in the site-packages/comtypes/gen directory because creating in the temp directory
+        causes import errors (bad magic number) if the Python version changes. If you freeze your application please see
+        the comtypes documentation for including the generated files.
 * 2.0.6
     * Removed the need for modified comtypes files under Windows. The comtypes files to access the windows mtp api are now automatically
         created in the users temp directory in the comtypes folder.

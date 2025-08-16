@@ -756,7 +756,7 @@ class MTP:
         @return: The integer of the Filetype
         """
 
-        fileext = filename.lower().split(".")[-1]  # type: ignore
+        fileext = filename.lower().split(".")[-1]
 
         if fileext == "wav" or fileext == "wave":
             return LIBMTP_Filetype["WAV"]
@@ -894,7 +894,7 @@ class MTP:
 
     #     return self.mtp.LIBMTP_Get_Deviceversion(self.device)
 
-    # def get_filelisting(self, callback=None): # type: ignore
+    # def get_filelisting(self, callback=None):
     #     """
     #     Returns the connected device's file listing as a tuple,
     #     containing L{LIBMTP_File} objects.
@@ -911,21 +911,21 @@ class MTP:
     #         raise NotConnected
 
     #     if callback != None:
-    #         callback = Progressfunc(callback) # type: ignore
+    #         callback = Progressfunc(callback)
 
     #     files = self.mtp.LIBMTP_Get_Filelisting_With_Callback(self.device, callback, None)
     #     ret = []
     #     next = files
 
     #     while next:
-    #         ret.append(next.contents) # type: ignore
+    #         ret.append(next.contents)
     #         if next.contents.next is None:
     #             break
     #         next = next.contents.next
 
-    #     return ret # type: ignore
+    #     return ret
 
-    # def get_filetype_description(self, filetype): # type: ignore
+    # def get_filetype_description(self, filetype):
     #     """
     #     Returns the description of the filetype
 
@@ -940,7 +940,7 @@ class MTP:
 
     #     return self.mtp.LIBMTP_Get_Filetype_Description(filetype)
 
-    # def get_file_metadata(self, file_id): # type: ignore
+    # def get_file_metadata(self, file_id):
     #     """
     #     Returns the file metadata from the connected device
 
@@ -964,7 +964,7 @@ class MTP:
 
     #     return ret.contents
 
-    # def get_tracklisting(self, callback=None): # type: ignore
+    # def get_tracklisting(self, callback=None):
     #     """
     #     Returns tracks from the connected device
 
@@ -980,21 +980,21 @@ class MTP:
     #         raise NotConnected
 
     #     if callback != None:
-    #         callback = Progressfunc(callback) # type: ignore
+    #         callback = Progressfunc(callback)
 
     #     tracks = self.mtp.LIBMTP_Get_Tracklisting_With_Callback(self.device, callback, None)
     #     ret = []
     #     next = tracks
 
     #     while next:
-    #         ret.append(next.contents) # type: ignore
+    #         ret.append(next.contents)
     #         if next.contents.next is None:
     #             break
     #         next = next.contents.next
 
-    #     return ret # type: ignore
+    #     return ret
 
-    # def get_track_metadata(self, track_id): # type: ignore
+    # def get_track_metadata(self, track_id):
     #     """
     #     Returns the track metadata
 
@@ -1017,7 +1017,7 @@ class MTP:
 
     #     return ret.contents
 
-    # def get_track_to_file(self, track_id, target, callback=None): # type: ignore
+    # def get_track_to_file(self, track_id, target, callback=None):
     #     """
     #     Downloads the track from the connected device and stores it at
     #     the target location
@@ -1036,7 +1036,7 @@ class MTP:
     #         raise NotConnected
 
     #     if callback != None:
-    #         callback = Progressfunc(callback) # type: ignore
+    #         callback = Progressfunc(callback)
 
     #     ret = self.mtp.LIBMTP_Get_Track_To_File(self.device, track_id, target, callback, None)
 
@@ -1044,7 +1044,7 @@ class MTP:
     #         self.debug_stack()
     #         raise CommandFailed
 
-    # def send_track_from_file(self, source, target, metadata, callback=None): # type: ignore
+    # def send_track_from_file(self, source, target, metadata, callback=None):
     #     """
     #     Sends a track from the filesystem to the connected
     #     device
@@ -1066,25 +1066,25 @@ class MTP:
     #     if self.device is None:
     #         raise NotConnected
 
-    #     if os.path.exists(source) is None: # type: ignore
+    #     if os.path.exists(source) is None:
     #         raise IOError
 
     #     if callback:
-    #         callback = Progressfunc(callback) # type: ignore
+    #         callback = Progressfunc(callback)
 
     #     metadata.filename = target
-    #     metadata.filetype = self.find_filetype(source) # type: ignore
-    #     metadata.filesize = os.stat(source).st_size # type: ignore
+    #     metadata.filetype = self.find_filetype(source)
+    #     metadata.filesize = os.stat(source).st_size
 
     #     ret = self.mtp.LIBMTP_Send_Track_From_File(
-    #         self.device, source, ctypes.pointer(metadata), callback, None # type: ignore
+    #         self.device, source, ctypes.pointer(metadata), callback, None
     #     )
 
     #     if ret != 0:
     #         self.debug_stack()
     #         raise CommandFailed
 
-    #     return metadata.item_id # type: ignore
+    #     return metadata.item_id 
 
     # def get_freespace(self):
     #     """
@@ -1147,7 +1147,7 @@ class MTP:
     #     usedspace = storage.MaxCapacity - storage.FreeSpaceInBytes
     #     return (float(usedspace) / float(storage.MaxCapacity)) * 100
 
-    # def get_playlists(self): # type: ignore
+    # def get_playlists(self):
     #     """
     #     Returns a tuple filled with L{LIBMTP_Playlist} objects
     #     from the connected device.
@@ -1170,14 +1170,14 @@ class MTP:
     #     next = playlists
 
     #     while next:
-    #         ret.append(next.contents) # type: ignore
+    #         ret.append(next.contents)
     #         if next.contents.next is None:
     #             break
     #         next = next.contents.next
 
-    #     return ret # type: ignore
+    #     return ret
 
-    # def get_playlist(self, playlist_id): # type: ignore
+    # def get_playlist(self, playlist_id):
     #     """
     #     Returns a L{LIBMTP_Playlist} object of the requested
     #     playlist_id from the connected device
@@ -1198,7 +1198,7 @@ class MTP:
 
     #     return ret
 
-    # def create_new_playlist(self, metadata): # type: ignore
+    # def create_new_playlist(self, metadata):
     #     """
     #     Creates a new playlist based on the metadata object
     #     passed.
@@ -1213,15 +1213,15 @@ class MTP:
     #     if self.device is None:
     #         raise NotConnected
 
-    #     ret = self.mtp.LIBMTP_Create_New_Playlist(self.device, ctypes.pointer(metadata)) # type: ignore
+    #     ret = self.mtp.LIBMTP_Create_New_Playlist(self.device, ctypes.pointer(metadata)) 
 
     #     if ret != 0:
     #         self.debug_stack()
     #         raise CommandFailed
 
-    #     return metadata.playlist_id # type: ignore
+    #     return metadata.playlist_id
 
-    # def update_playlist(self, metadata): # type: ignore
+    # def update_playlist(self, metadata):
     #     """
     #     Updates a playlist based on the supplied metadata.
 
@@ -1245,7 +1245,7 @@ class MTP:
     #         self.debug_stack()
     #         raise CommandFailed
 
-    # def get_folder_list(self): # type: ignore
+    # def get_folder_list(self):
     #     """
     #     Returns a pythonic dict of the folders on the
     #     device.
@@ -1290,9 +1290,9 @@ class MTP:
     #             ## We have scanned everything, let's go home.
     #             break
 
-    #     return ret # type: ignore
+    #     return ret
 
-    # def get_parent_folders(self): # type: ignore
+    # def get_parent_folders(self):
     #     """
     #     Returns a list of only the parent folders.
     #     @rtype: list
@@ -1323,10 +1323,10 @@ class MTP:
 
     #     ## convert the dict into a list
     #     ret = []
-    #     for key in tmp: # type: ignore
-    #         ret.append(tmp[key]) # type: ignore
+    #     for key in tmp:
+    #         ret.append(tmp[key])
 
-    #     return ret # type: ignore
+    #     return ret
 
     # def get_errorstack(self):
     #     """
@@ -1369,7 +1369,7 @@ class MTP:
 #         for track in range(self.no_tracks.value):
 #             yield self.tracks[track]
 
-#     def __getitem__(self, key): # type: ignore
+#     def __getitem__(self, key):
 #         """
 #         This allows the playlist to return tracks like a list
 #         """
@@ -1379,7 +1379,7 @@ class MTP:
 
 #         return self.tracks[key]
 
-#     def __setitem__(self, key, value): # type: ignore
+#     def __setitem__(self, key, value):
 #         """
 #         This allows the user to manipulate the playlist like a
 #         list. However, this will only modify existing objects,
@@ -1391,7 +1391,7 @@ class MTP:
 
 #         self.tracks[key] = value
 
-#     def __delitem__(self, key): # type: ignore
+#     def __delitem__(self, key):
 #         """
 #         This allows the user to delete an object
 #         from the playlist
@@ -1400,17 +1400,17 @@ class MTP:
 #         if key > (self.no_tracks.value - 1):
 #             raise IndexError
 
-#         for i in range(key, (self.no_tracks.value - 1)): # type: ignore
+#         for i in range(key, (self.no_tracks.value - 1)):
 #             self.tracks[i] = self.tracks[i + 1]
 
 #         self.no_tracks.value -= 1
 
-#     def append(self, value): # type: ignore
+#     def append(self, value):
 #         """
 #         This function appends a track to the end of the tracks
 #         list.
 #         """
-#         if self.tracks is None: # type: ignore
+#         if self.tracks is None:
 #             self.tracks = ctypes.pointer(ctypes.c_uint32(0))
 
 #         self.no_tracks.value += 1

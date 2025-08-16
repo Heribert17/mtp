@@ -3,7 +3,7 @@ A module with MTP relevant dialogs for tkinter
 
 Author:  Heribert Füchtenhans
 
-Version: 2025.6.28
+Version: 2025.6.29
 
 Requirements:
     - Python modules
@@ -72,7 +72,7 @@ class _TreeEntry:
     content_loaded: bool
 
 
-class AskDirectory(tkinter.simpledialog.Dialog):  # pylint: disable=too-many-instance-attributes
+class AskDirectory(tkinter.simpledialog.Dialog):
     """Select a wpd device and directory.
 
     Attributes:
