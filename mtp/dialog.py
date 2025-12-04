@@ -3,7 +3,7 @@ A module with MTP relevant dialogs for tkinter
 
 Author:  Heribert Füchtenhans
 
-Version: 2025.6.29
+Version: 2025.12.04
 
 Requirements:
     - Python modules
@@ -29,9 +29,6 @@ from tkinter import ttk
 from tkinter.ttk import Button
 from tkinter.ttk import Frame
 from typing import override
-
-import mtp.win_access
-import mtp.linux_access
 
 if platform.system() == "windows":
     from . import win_access as access
@@ -150,7 +147,7 @@ class AskDirectory(tkinter.simpledialog.Dialog):
     def _process_directory(self, insert_after_id: str) -> None:
         """Insert directory listing until depth is 0"""
         treeentry: _TreeEntry = self._tree_entries[insert_after_id]
-        cont: list[mtp.win_access.PortableDeviceContent | mtp.linux_access.PortableDeviceContent] = (
+        cont: list[access.PortableDeviceContent] = (
             list(treeentry.content.get_children())
             if treeentry.content is not None
             else list(treeentry.dev.get_content())
@@ -199,7 +196,7 @@ class AskDirectory(tkinter.simpledialog.Dialog):
         if treeid == "":
             self.cancel()
         else:
-            cont: mtp.win_access.PortableDeviceContent | mtp.linux_access.PortableDeviceContent | None = (
+            cont: access.PortableDeviceContent | None = (
                 self._tree_entries[treeid].content
             )
             if cont is None:
