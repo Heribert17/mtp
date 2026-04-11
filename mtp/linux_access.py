@@ -8,7 +8,7 @@ libmtp.
 
 Author:  Heribert Füchtenhans
 
-Version: 2025.6.29
+Version: 2026.04.10
 
 For examples please look into the examples directory.
 
@@ -65,7 +65,7 @@ from typing import Callable, Literal, override
 import urllib.parse
 
 
-import mtp.pylibmtp as pylibmtp
+from . import libmtp_access as libmtp_access
 
 
 # Constants for the type entries returned bei PortableDeviceContent.get_properties
@@ -79,7 +79,7 @@ WPD_CONTENT_TYPE_DEVICE = 3
 WPD_DELETE_NO_RECURSION = 0
 WPD_DELETE_WITH_RECURSION = 1
 
-_libmtp: pylibmtp.MTP | None = None
+_libmtp: libmtp_access.MTP | None = None
 _gvfs_found = True
 _gvfs_search_path = f"/run/user/{os.getuid()}/gvfs"  # path for gvfs miunted devices
 
@@ -114,7 +114,7 @@ def _init_libmtp() -> None:
                 else:
                     # No prg using ist
                     continue
-    _libmtp = pylibmtp.MTP()
+    _libmtp = libmtp_access.MTP()
 
 
 # -------------------------------------------------------------------------------------------------
@@ -137,7 +137,7 @@ class PortableDevice:
     """
 
     def __init__(
-        self, device: "str | ctypes._Pointer[pylibmtp.LIBMTP_RawDevice]"  # pyright: ignore[reportPrivateUsage]
+        self, device: "str | ctypes._Pointer[libmtp_access.LIBMTP_RawDevice]"  # pyright: ignore[reportPrivateUsage]
     ) -> None:
         """Init the class.
 
@@ -171,7 +171,7 @@ class PortableDevice:
             # greps libmtp back is very small
             if _libmtp is None:
                 _init_libmtp()
-            self.libmntp_device: pylibmtp.MTP = pylibmtp.MTP(device)
+            self.libmntp_device: libmtp_access.MTP = libmtp_access.MTP(device)
             self.libmntp_device.connect()
             self.name = self.libmntp_device.get_devicename()
             self.description = self.libmntp_device.get_modelname()
@@ -220,11 +220,11 @@ class PortableDevice:
                         port_device=self,
                         dirpath=full_name,
                         storage_id=entry[1],
-                        entry_id=pylibmtp.LIBMTP_FILES_AND_FOLDERS_ROOT,
+                        entry_id=libmtp_access.LIBMTP_FILES_AND_FOLDERS_ROOT,
                         typ=WPD_CONTENT_TYPE_STORAGE,
                     )
                     ret_objs.append(pdc)
-            except pylibmtp.CommandFailed as err:
+            except libmtp_access.CommandFailed as err:
                 raise IOError(f"Can't access {self.devicename}.") from err
         ret_objs.sort(key=lambda entry: entry.name)
         return ret_objs
@@ -341,7 +341,7 @@ class PortableDeviceContent:
             for entry in self._port_device.libmntp_device.get_files_and_folder(self.storage_id, self.entry_id):
                 type: Literal[1, 2] = (
                     WPD_CONTENT_TYPE_DIRECTORY
-                    if entry.filetype == pylibmtp.LIBMTP_Filetype["FOLDER"].value  # pyright: ignore[reportAny]
+                    if entry.filetype == libmtp_access.MTP.filetypes["/"]  # pyright: ignore[reportAny]
                     else WPD_CONTENT_TYPE_FILE
                 )
                 yield PortableDeviceContent(
@@ -398,7 +398,7 @@ class PortableDeviceContent:
                 # Ok found, so do a direct return
                 type: Literal[1, 2] = (
                     WPD_CONTENT_TYPE_DIRECTORY
-                    if entry.filetype == pylibmtp.LIBMTP_Filetype["FOLDER"].value  # pyright: ignore[reportAny]
+                    if entry.filetype == libmtp_access.MTP.filetypes["/"]  # pyright: ignore[reportAny]
                     else WPD_CONTENT_TYPE_FILE
                 )
                 return PortableDeviceContent(

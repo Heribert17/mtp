@@ -5,8 +5,8 @@ should be used for production code
 """
 
 # import gc
-import mtp.win_access
-import mtp.linux_access
+# import mtp.win_access
+# import mtp.linux_access
 import os
 import platform
 import sys
@@ -88,7 +88,7 @@ def test_4_get_cont_from_path() -> None:
     for dev in mtp_access.get_portable_devices():
         for i in range(TESTRUNS):
             print(f"Find content of a full qualified path on test run {i+1}:")
-            cont: mtp.win_access.PortableDeviceContent | mtp.linux_access.PortableDeviceContent | None = (
+            cont: mtp_access.PortableDeviceContent | None = (
                 mtp_access.get_content_from_device_path(
                     dev,  # pyright: ignore[reportArgumentType]
                     f"{dev.devicename}/Interner gemeinsamer Speicher/Android/data/com.google.android.apps.maps/cache/diskcache",
