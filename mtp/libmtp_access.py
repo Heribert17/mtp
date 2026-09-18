@@ -4,15 +4,21 @@ because KDE doesn't mount mobil devices as a virtual filesystem like gnome.
 
 Author:  Heribert Füchtenhans
 
-Version: 2026.04.11
+Version: 2026.09.17
+
+Info:
+    It isn't possible to set the creation or modification time of a copied file
+    on an android device.
+
+Change:
+    2026.09.17:
+        Changed IOError into OSError
 """
 
-from typing import override
-
-import os
 import ctypes
 import ctypes.util
-
+import os
+from typing import ClassVar, override
 
 _module_path = ctypes.util.find_library("mtp")
 _libmtp = ctypes.CDLL(_module_path)
@@ -23,25 +29,17 @@ _libmtp = ctypes.CDLL(_module_path)
 class NoDeviceConnected(Exception):
     """No device is connted"""
 
-    pass
-
 
 class CommandFailed(Exception):
     """Command returned with error"""
-
-    pass
 
 
 class NotConnected(Exception):
     """Device is not connected"""
 
-    pass
-
 
 class ObjectNotFound(Exception):
     """The object doesn't exists"""
-
-    pass
 
 
 # libmtp structure definitions
@@ -161,7 +159,7 @@ class LIBMTP_File(ctypes.Structure):
 
     @override
     def __repr__(self):
-        return "%s (%s)" % (self.filename, self.item_id)  # pyright: ignore[reportAny]
+        return f"{self.filename} ({self.item_id})"  # pyright: ignore[reportAny]
 
 
 LIBMTP_File._fields_ = [
@@ -184,7 +182,7 @@ class LIBMTP_Folder(ctypes.Structure):
 
     @override
     def __repr__(self):
-        return "%s (%s)" % (self.name, self.folder_id)  # pyright: ignore[reportAny]
+        return f"{self.name} ({self.folder_id})"  # pyright: ignore[reportAny]
 
 
 LIBMTP_Folder._fields_ = [
@@ -255,7 +253,8 @@ class MTP:
 
     def __init__(
         self,
-        new_raw_device: ctypes._Pointer[LIBMTP_RawDevice] | str | None = None,  # pyright: ignore[reportPrivateUsage]
+        # new_raw_device: ctypes._Pointer[LIBMTP_RawDevice] | str | None = None,
+        new_raw_device: ctypes._Pointer | str | None = None,  # pyright: ignore[reportMissingTypeArgument, reportPrivateUsage, reportUnknownParameterType]
     ) -> None:
         """Initializes the MTP object"""
         self.mtp: ctypes.CDLL = _libmtp
@@ -268,7 +267,8 @@ class MTP:
         )
         self.raw_devices: ctypes._Pointer[ctypes._Pointer[LIBMTP_RawDevice]]  # pyright: ignore[reportPrivateUsage]
 
-    def detect_devices(self) -> list[ctypes._Pointer[LIBMTP_RawDevice]]:  # pyright: ignore[reportPrivateUsage]
+    # def detect_devices(self) -> list[ctypes._Pointer[LIBMTP_RawDevice]]:
+    def detect_devices(self) -> list[ctypes._Pointer]:  # pyright: ignore[reportPrivateUsage, reportMissingTypeArgument, reportUnknownParameterType]
         """Detect connected devices"""
         devlist: list[ctypes._Pointer[LIBMTP_RawDevice]] = []  # pyright: ignore[reportPrivateUsage]
         device = LIBMTP_RawDevice()
@@ -343,15 +343,13 @@ class MTP:
         if self.device is None:
             raise NotConnected
         ret: int = int(
-            self.mtp.LIBMTP_Create_Folder(
-                self.device, name.encode("UTF-8"), parent, storage
-            )  # pyright: ignore[reportAny]
+            self.mtp.LIBMTP_Create_Folder(self.device, name.encode("UTF-8"), parent, storage)  # pyright: ignore[reportAny]
         )
         if ret == 0:
             raise CommandFailed
         return ret
 
-    filetypes: dict[str, int] = {
+    filetypes: ClassVar[dict[str, int]] = {
         "/": 0,
         "wav": 1,
         "mp3": 2,
@@ -403,8 +401,7 @@ class MTP:
     def find_filetype(self, filename: str) -> ctypes.c_int:
         """Check the filetype and return the cytypes number."""
         ext = os.path.splitext(filename)[1]
-        if ext.startswith("."):
-            ext = ext[1:]
+        ext = ext.removeprefix(".")
         val = self.filetypes[ext] if ext in self.filetypes else self.filetypes["unknown"]
         return ctypes.c_int(val)
 
@@ -420,7 +417,7 @@ class MTP:
         if self.device is None:
             raise NotConnected
         if os.path.isfile(source) == False:
-            raise IOError(f"File {source} not found")
+            raise OSError(f"File {source} not found")
 
         metadata = LIBMTP_File(
             filename=target.encode("UTF-8"),
@@ -446,9 +443,7 @@ class MTP:
         if self.device is None:
             raise NotConnected
         ret = int(
-            self.mtp.LIBMTP_Get_File_To_File(
-                self.device, file_id, target.encode("UTF-8"), None, None
-            )  # pyright: ignore[reportAny]
+            self.mtp.LIBMTP_Get_File_To_File(self.device, file_id, target.encode("UTF-8"), None, None)  # pyright: ignore[reportAny]
         )
         if ret != 0:
             raise CommandFailed

@@ -21,9 +21,9 @@ Only some directory and file access and functions are implemented. For example:
 python -m pip install mtp
 """
 
-setuptools.setup(
+_ = setuptools.setup(
     name="mtp",
-    version="2.0.5",
+    version="2.0.9",
     author="Heribert Füchtenhans",
     author_email="heribert.fuechtenhans@yahoo.de",
     description="Functions to access files on an MTP device (smartphone, etc.) under Windows and Linux.",

@@ -28,6 +28,9 @@ dialog.py implements a directory searcher in tkinter that shows the attached MTP
 
 
 # Changelog
+* 2.0.9
+    * Changed returned Error vom IOError to OSError (Applications don't need to be modifies as IOError is a Subclass of OSError)
+    * Added info about Upper-/Lowercase filenames when creating directories and uploading files
 * 2.0.8
     * Replaced pylibmtp with libmtp_access. This module contains only those libmtp calls needed to access the filesystem
       on an MTP device.

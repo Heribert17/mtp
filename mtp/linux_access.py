@@ -8,11 +8,11 @@ libmtp.
 
 Author:  Heribert Füchtenhans
 
-Version: 2026.04.10
+Version: 2026.09.17
 
 For examples please look into the examples directory.
 
-All functions through IOError when a communication fails.
+All functions through OSError when a communication fails.
 
 Requirements:
     - OS
@@ -40,6 +40,12 @@ Information to the filenames used in MTP:
     It's the the name attribute
 - Every PortableDeviceContent has an attribute 'full_filename' that contains the whole
     path of that content
+- Be carefull about Upper-/Lowewrcase filenames. For example Gnome creates internal
+    directories with the same name but other upper-/lowercase settings, but doesnt't
+    store them on the smartphone.
+    For example: there exists a directory 'Download' on the device, if you create a
+    new directory 'download' with makedirs, you see 'download' in the Linux filesystem
+    but NOT on the device and all files stored in 'download' aren't copied to the device.
 
 Examples:
     >>> import mtp.linux_access
@@ -50,23 +56,24 @@ Examples:
     'PortableDevice: '
     >>> devs[0].close()
 
+    Examples only work on a special phone and need to be adjusted for other smartphones
+
+Changes:
+    2026.09.17:
+        Alle functions raise OSError insted of IOError
 """
 
-from subprocess import Popen
-
-
-import collections.abc
 import ctypes
 import datetime
 import os
 import shutil
 import subprocess
-from typing import Callable, Literal, override
 import urllib.parse
+from collections.abc import Callable, Generator
+from subprocess import Popen
+from typing import Literal, override
 
-
-from . import libmtp_access as libmtp_access
-
+from mtp import libmtp_access
 
 # Constants for the type entries returned bei PortableDeviceContent.get_properties
 WPD_CONTENT_TYPE_UNDEFINED = -1
@@ -100,17 +107,19 @@ def _init_libmtp() -> None:
     pl: Popen[bytes] = subprocess.Popen("lsusb", stdout=subprocess.PIPE, shell=True)
     (output, _) = pl.communicate()
     if pl.wait() != 0:
-        raise IOError("Can't get output from lsusb!")
+        raise OSError("Can't get output from lsusb!")
     for o in output.decode("ascii").split("\n"):
         if o.upper().endswith("(MTP MODE)"):
             bus: str = o[4:7]
             dev: str = o[15:18]
             # Get programm that uses libmtp return pid
-            pf: Popen[bytes] = subprocess.Popen(f"fuser -k /dev/bus/usb/{bus}/{dev}", stdout=subprocess.PIPE, shell=True)
+            pf: Popen[bytes] = subprocess.Popen(
+                f"fuser -k /dev/bus/usb/{bus}/{dev}", stdout=subprocess.PIPE, shell=True
+            )
             (output, _) = pf.communicate()
             if pf.wait() != 0:
                 if len(output) != 0:
-                    raise IOError(f'Can\'t get programs that use libmtp: {output.decode("utf-8")}')
+                    raise OSError(f"Can't get programs that use libmtp: {output.decode('utf-8')}")
                 else:
                     # No prg using ist
                     continue
@@ -133,11 +142,12 @@ class PortableDevice:
         devicename: The full name of the device. Use it when building pathes
 
     Exceptions:
-        IOError: If something went wrong
+        OSError: If something went wrong
     """
 
     def __init__(
-        self, device: "str | ctypes._Pointer[libmtp_access.LIBMTP_RawDevice]"  # pyright: ignore[reportPrivateUsage]
+        self,
+        device: "str | ctypes._Pointer[libmtp_access.LIBMTP_RawDevice]",  # pyright: ignore[reportPrivateUsage]
     ) -> None:
         """Init the class.
 
@@ -192,7 +202,7 @@ class PortableDevice:
             A list of instances of PortableDeviceContent, one for each storage
 
         Exceptions:
-            IOError: If something went wrong
+            OSError: If something went wrong
 
         Examples:
             >>> import mtp.linux_access
@@ -200,18 +210,18 @@ class PortableDevice:
             >>> stor = dev[0].get_content()
             >>> len(stor)
             2
-            >>> str(stor[0])[:31]
-            'PortableDeviceContent Interner '
+            >>> str(stor[0]).split(' ', 1)[1].split(os.sep)[1][:17]
+            'Interner Speicher'
             >>> dev[0].close()
         """
-        ret_objs: list["PortableDeviceContent"] = []
+        ret_objs: list[PortableDeviceContent] = []
         if _gvfs_found:
             try:
                 for entry in os.listdir(os.path.join(_gvfs_search_path, self._device)):
                     full_name = os.path.join(self.devicename, entry)
                     ret_objs.append(PortableDeviceContent(self, full_name, 0, 0, WPD_CONTENT_TYPE_STORAGE))
             except OSError as err:
-                raise IOError(f"Can't access {self.devicename}.") from err
+                raise OSError(f"Can't access {self.devicename}.") from err
         else:
             try:
                 for entry in self.libmntp_device.get_storage():
@@ -225,7 +235,7 @@ class PortableDevice:
                     )
                     ret_objs.append(pdc)
             except libmtp_access.CommandFailed as err:
-                raise IOError(f"Can't access {self.devicename}.") from err
+                raise OSError(f"Can't access {self.devicename}.") from err
         ret_objs.sort(key=lambda entry: entry.name)
         return ret_objs
 
@@ -241,7 +251,7 @@ class PortableDeviceContent:
 
     Methods:
         get_children: Get the children of this content (files and directories)
-        get_child: Returns a PortableDeviceContent for one child whos name is known.
+        get_child: Returns a PortableDeviceContent for one child who's name is known.
         get_path: Returns a PortableDeviceContent for a child who's path in the tree is known.
         create_content: Creates an empty directory content in this content.
         upload_file: Upload of a file to MTP device.
@@ -250,7 +260,7 @@ class PortableDeviceContent:
 
     Attributes:
         name: Directory-/Filename of this content
-        fullname: The full path name
+        full_filename: The full path name
         date_modified: The file modification date
         size: The size of the file in bytes
         content_type: Type of the entry. One of the WPD_CONTENT_TYPE_ constants:
@@ -262,7 +272,7 @@ class PortableDeviceContent:
             - WPD_CONTENT_TYPE_DEVICE = 3
 
     Exceptions:
-        IOError: If something went wrong
+        OSError: If something went wrong
     """
 
     def __init__(
@@ -299,26 +309,29 @@ class PortableDeviceContent:
         elif typ == WPD_CONTENT_TYPE_DEVICE:
             self.full_filename = port_device.devicename
 
-    def get_children(self) -> collections.abc.Generator["PortableDeviceContent", None, None]:
+    def get_children(
+        self,
+    ) -> Generator["PortableDeviceContent", None, None]:
         """Get the child items (dirs and files) of a folder.
 
         Returns:
             A Generator of PortableDeviceContent instances each representing a child entry.
 
         Exceptions:
-            IOError: If something went wrong
+            OSError: If something went wrong
 
         Examples:
             >>> import mtp.linux_access
             >>> dev = mtp.linux_access.get_portable_devices()
             >>> stor = dev[0].get_content()[0]
             >>> str(list(stor.get_children())[0])
-            'PortableDeviceContent Pictures (1)'
+            'PortableDeviceContent SAMSUNG_SAMSUNG_Android_RFCX50C5CFF/Interner Speicher/Pictures (1)'
             >>> dev[0].close()
         """
         if _gvfs_found:
             full_filename: str = os.path.join(
-                _gvfs_search_path, self._port_device.device_start_part + self.full_filename
+                _gvfs_search_path,
+                self._port_device.device_start_part + self.full_filename,
             )
             if not os.path.isdir(full_filename):
                 return
@@ -347,7 +360,8 @@ class PortableDeviceContent:
                 yield PortableDeviceContent(
                     port_device=self._port_device,
                     dirpath=os.path.join(
-                        self.full_filename, entry.filename.decode("utf-8")  # pyright: ignore[reportAny]
+                        self.full_filename,
+                        entry.filename.decode("utf-8"),  # pyright: ignore[reportAny]
                     ),
                     storage_id=self.storage_id,
                     entry_id=entry.item_id,  # pyright: ignore[reportAny]
@@ -367,18 +381,22 @@ class PortableDeviceContent:
             The PortableDeviceContent instance of the child or None if the child could not be found.
 
         Exceptions:
-            IOError: If something went wrong
+            OSError: If something went wrong
 
         Examples:
             >>> import mtp.linux_access
             >>> dev = mtp.linux_access.get_portable_devices()
-            >>> stor = dev[0].get_content()[0]
-            >>> str(stor.get_child("DCIM"))
-            'PortableDeviceContent DCIM (1)'
+            >>> stor = dev[0].get_content()[1]
+            >>> str(stor.get_child("DCIM"))[-8:]
+            'DCIM (1)'
             >>> dev[0].close()
         """
         if _gvfs_found:
-            fullname = os.path.join(_gvfs_search_path, self._port_device.device_start_part + self.full_filename, name)
+            fullname = os.path.join(
+                _gvfs_search_path,
+                self._port_device.device_start_part + self.full_filename,
+                name,
+            )
             if not os.path.exists(fullname):
                 return None
             return PortableDeviceContent(
@@ -423,16 +441,16 @@ class PortableDeviceContent:
             The PortableDeviceContent instance of the child or None if the child could not be found.
 
         Exceptions:
-            IOError: If something went wrong
+            OSError: If something went wrong
 
         Examples:
             >>> import mtp.linux_access
             >>> dev = mtp.linux_access.get_portable_devices()
             >>> stor = dev[0].get_content()[0]
             >>> str(stor.get_path(f"{stor.full_filename}/DCIM"))
-            'PortableDeviceContent DCIM (1)'
+            'PortableDeviceContent SAMSUNG_SAMSUNG_Android_RFCX50C5CFF/Interner Speicher/DCIM (1)'
             >>> str(stor.get_path(f"DCIM"))
-            'PortableDeviceContent DCIM (1)'
+            'PortableDeviceContent SAMSUNG_SAMSUNG_Android_RFCX50C5CFF/Interner Speicher/DCIM (1)'
             >>> dev[0].close()
         """
         path = path.replace("\\", os.path.sep)
@@ -458,7 +476,7 @@ class PortableDeviceContent:
                 (WPD_CONTENT_TYPE_DIRECTORY if os.path.isdir(full_filename) else WPD_CONTENT_TYPE_FILE),
             )
         else:
-            cur: "PortableDeviceContent | None" = self
+            cur: PortableDeviceContent | None = self
             for part in path.split(os.path.sep):
                 if not cur:
                     return None
@@ -467,8 +485,8 @@ class PortableDeviceContent:
 
     @override
     def __repr__(self) -> str:
-        """ """
-        return f"PortableDeviceContent {self.name} ({self.content_type})"
+        """Return string representation of this class."""
+        return f"PortableDeviceContent {self.full_filename} ({self.content_type})"
 
     def create_content(self, dirname: str) -> "PortableDeviceContent":
         """Creates an empty directory content in this content.
@@ -480,7 +498,7 @@ class PortableDeviceContent:
             PortableDeviceContent for the new directory
 
         Exceptions:
-            IOError: If something went wrong
+            OSError: If something went wrong
 
         Examples:
             >>> import mtp.linux_access
@@ -489,25 +507,29 @@ class PortableDeviceContent:
             >>> mycont = stor[0].get_path(f"{stor[0].full_filename}/MyMusic")
             >>> if mycont: _ = mycont.remove()
             >>> cont = stor[0].create_content("MyMusic")
-            >>> str(cont)
-            'PortableDeviceContent MyMusic (1)'
+            >>> str(cont)[-11:]
+            'MyMusic (1)'
             >>> dev[0].close()
         """
         fullname = os.path.join(self.full_filename, dirname)
         if _gvfs_found:
             full_filename = os.path.join(_gvfs_search_path, self._port_device.device_start_part + fullname)
             if os.path.exists(full_filename):
-                raise IOError(f"Directory '{fullname}' allready exists")
+                raise OSError(f"Directory '{fullname}' allready exists")
             os.mkdir(full_filename)
             pdc = PortableDeviceContent(self._port_device, fullname, 0, 0, WPD_CONTENT_TYPE_DIRECTORY)
         else:
             try:
                 id = self._port_device.libmntp_device.create_folder(dirname, self.entry_id, self.storage_id)
                 pdc = PortableDeviceContent(
-                    self._port_device, fullname, self.storage_id, id, WPD_CONTENT_TYPE_DIRECTORY
+                    self._port_device,
+                    fullname,
+                    self.storage_id,
+                    id,
+                    WPD_CONTENT_TYPE_DIRECTORY,
                 )
-            except Exception:
-                raise IOError(f"Error creating directory '{fullname}'")
+            except OSError:
+                raise OSError(f"Error creating directory '{fullname}'")
         return pdc
 
     def upload_file(self, filename: str, inputfilename: str) -> None:
@@ -518,21 +540,33 @@ class PortableDeviceContent:
             inputfilename: Name of the file that shall be uploaded
 
         Exceptions:
-            IOError: If something went wrong
+            OSError: If something went wrong
+
+        ATTENTION:
+            On Android devices it isn't possible to set the creation or modification time of a copied file!
+            This is caused by an uncomplete implementation of the MTP protocol in Android.
+            If you need to preserve the correct date/time, use another protocol to upload files.
+
+            Be carefull about Upper-/Lowewrcase filenames. For example Gnome creates internal
+            directories with the same name but other upper-/lowercase settings, but doesnt't
+            store them on the smartphone.
+            For example: there exists a directory 'Download' on the device, if you create a
+            new directory 'download' with makedirs, you see 'download' in the Linux filesystem
+            but NOT on the device and all files stored in 'download' aren't copied to the device.
 
         Examples:
             >>> import mtp.linux_access
             >>> dev = mtp.linux_access.get_portable_devices()
-            >>> stor = dev[0].get_content()[0]
+            >>> stor = dev[0].get_content()[1]
             >>> mycont = stor.get_path("DCIM/Camera/test.jpg")
             >>> if mycont: _ = mycont.remove()
             >>> cont = stor.get_path("DCIM/Camera")
             >>> name = './tests/pic.jpg'
             >>> cont.upload_file("test.jpg", name)
-            >>> stor = dev[0].get_content()[0]
+            >>> stor = dev[0].get_content()[1]
             >>> mycont = stor.get_path("DCIM/Camera/test.jpg")
-            >>> str(mycont)
-            'PortableDeviceContent test.jpg (2)'
+            >>> str(mycont)[-12:]
+            'test.jpg (2)'
             >>> dev[0].close()
         """
         if _gvfs_found:
@@ -553,7 +587,7 @@ class PortableDeviceContent:
                         stderr=subprocess.STDOUT,
                     )
                 except subprocess.CalledProcessError as err:
-                    raise IOError(
+                    raise OSError(
                         f"Error copying file '{inputfilename}' to '{gio_full_filename}': {urllib.parse.unquote(err.output.decode('utf-8'))}"  # pyright: ignore[reportAny]
                     ) from err
             # shutil.copy(inputfilename, full_filename)
@@ -571,20 +605,23 @@ class PortableDeviceContent:
                             content will be replaced.
 
         Exceptions:
-            IOError: If something went wrong
+            OSError: If something went wrong
 
         Examples:
             >>> import mtp.linux_access
             >>> dev = mtp.linux_access.get_portable_devices()
             >>> stor = dev[0].get_content()
-            >>> cont = stor[0].get_path(f"{stor[0].full_filename}/DCIM/Camera/IMG_20241210_160830.jpg")
+            >>> cont = stor[1].get_path(f"{stor[1].full_filename}/DCIM/Camera/20120520_191216.jpg")
             >>> name = 'picture.jpg'
             >>> cont.download_file(name)
             >>> os.remove(name)
             >>> dev[0].close()
         """
         if _gvfs_found:
-            full_filename = os.path.join(_gvfs_search_path, self._port_device.device_start_part + self.full_filename)
+            full_filename = os.path.join(
+                _gvfs_search_path,
+                self._port_device.device_start_part + self.full_filename,
+            )
             _ = shutil.copy2(full_filename, outputfilename)
         else:
             self._port_device.libmntp_device.get_file_to_file(self.entry_id, outputfilename)
@@ -593,12 +630,12 @@ class PortableDeviceContent:
         """Deletes the current directory or file.
 
         Exceptions:
-            IOError: If something went wrong
+            OSError: If something went wrong
 
         Examples:
             >>> import mtp.linux_access
             >>> dev = mtp.linux_access.get_portable_devices()
-            >>> stor = dev[0].get_content()[0]
+            >>> stor = dev[0].get_content()[1]
             >>> mycont = stor.get_path("DCIM/Camera/test.jpg")
             >>> if mycont: _ = mycont.remove()
             >>> cont = stor.get_path("DCIM/Camera")
@@ -606,12 +643,15 @@ class PortableDeviceContent:
             >>> cont.upload_file("test.jpg", name)
             >>> mycont = stor.get_path("DCIM/Camera/test.jpg")
             >>> mycont.remove()
-            >>> str(mycont)
-            'PortableDeviceContent test.jpg (2)'
+            >>> str(mycont)[-12:]
+            'test.jpg (2)'
             >>> dev[0].close()
         """
         if _gvfs_found:
-            full_name = os.path.join(_gvfs_search_path, self._port_device.device_start_part + self.full_filename)
+            full_name = os.path.join(
+                _gvfs_search_path,
+                self._port_device.device_start_part + self.full_filename,
+            )
             if not os.path.exists(full_name):
                 return
             if self.content_type == WPD_CONTENT_TYPE_FILE:
@@ -634,7 +674,7 @@ def get_portable_devices() -> list[PortableDevice]:
             was found.
 
     Exceptions:
-        IOError: If something went wrong
+        OSError: If something went wrong
 
     Examples:
         >>> import mtp.linux_access
@@ -652,8 +692,8 @@ def get_portable_devices() -> list[PortableDevice]:
             _init_libmtp()
         if _libmtp is None:
             raise OSError("Can't init libmtp")
-        for entry in _libmtp.detect_devices():
-            dev = PortableDevice(entry)
+        for entry in _libmtp.detect_devices():  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
+            dev = PortableDevice(entry)  # pyright: ignore[reportUnknownArgumentType]
             # Device is not ready if we don't get a content
             if len(dev.get_content()) != 0:
                 devices.append(dev)
@@ -679,23 +719,23 @@ def get_content_from_device_path(dev: PortableDevice, fpath: str) -> PortableDev
             else None is returned.
 
     Exceptions:
-        IOError: If something went wrong
+        OSError: If something went wrong
 
     Examples:
         >>> import mtp.linux_access
         >>> dev = mtp.linux_access.get_portable_devices()
         >>> if os.path.exists(_gvfs_search_path):
-        ...    n = "Android_Android_PLEGAR1791402808/Interner gemeinsamer Speicher/DCIM/Camera"
+        ...    n = "SAMSUNG_SAMSUNG_Android_RFCX50C5CFF/SD-Karte/DCIM/Camera"
         ... else:
         ...    n = "Nokia 6_Nokia 6_PLEGAR1791402808/Interner gemeinsamer Speicher/DCIM/Camera"
         >>> cont = mtp.linux_access.get_content_from_device_path(dev[0], n)
-        >>> str(cont)
-        'PortableDeviceContent Camera (1)'
+        >>> str(cont)[-10:]
+        'Camera (1)'
         >>> dev[0].close()
     """
     fpath = fpath.replace("\\", os.path.sep)
     if fpath == dev.devicename:
-        raise IOError("get_content_from_device_path needs a devicename and a storage as paramter")
+        raise OSError("get_content_from_device_path needs a devicename and a storage as paramter")
     if _gvfs_found:
         full_fpath = os.path.join(_gvfs_search_path, dev.device_start_part + fpath)
         if not os.path.exists(full_fpath):
@@ -717,7 +757,7 @@ def get_content_from_device_path(dev: PortableDevice, fpath: str) -> PortableDev
                 found_stor = stor
                 break
         if found_stor is None:
-            raise IOError(f"The storage {storname_to_search} could not be found")
+            raise OSError(f"The storage {storname_to_search} could not be found")
         cont = found_stor
         for pp in parts[2:]:
             cont = cont.get_child(pp)
@@ -731,7 +771,7 @@ def walk(
     path: str,
     callback: Callable[[str], bool] | None = None,
     error_callback: Callable[[str], bool] | None = None,
-) -> collections.abc.Generator[tuple[str, list[PortableDeviceContent], list[PortableDeviceContent]], None, None]:
+) -> Generator[tuple[str, list[PortableDeviceContent], list[PortableDeviceContent]], None, None]:
     """Iterates ower all files in a tree just like os.walk
 
     Parameters:
@@ -753,23 +793,25 @@ def walk(
             - A list of PortableDeviceContent for the files in the directory
 
     Exceptions:
-        IOError: If something went wrong
+        OSError: If something went wrong
 
     Examples:
         >>> import mtp.linux_access
         >>> dev = mtp.linux_access.get_portable_devices()
         >>> if os.path.exists(_gvfs_search_path):
-        ...    n = "Android_Android_PLEGAR1791402808/Interner gemeinsamer Speicher/DCIM/Camera"
+        ...    n = "SAMSUNG_SAMSUNG_Android_RFCX50C5CFF/SD-Karte/DCIM/Camera"
         ... else:
         ...    n = "Nokia 6_Nokia 6_PLEGAR1791402808/Interner gemeinsamer Speicher/DCIM/Camera"
+        >>> i = 0
         >>> for r, d, f in mtp.linux_access.walk(dev[0], n):
+        ...     if i > 3: break
         ...     for f1 in f:
-        ...             print(f1.name)
+        ...             if i < 3: print('found')
+        ...             i += 1
         ...
-        IMG_20241210_160830.jpg
-        IMG_20241210_160833.jpg
-        IMG_20241210_161150.jpg
-        test.jpg
+        found
+        found
+        found
         >>> dev[0].close()
     """
     path = path.replace("\\", os.path.sep)
@@ -805,7 +847,7 @@ def walk(
                     files = []
                     return
             else:
-                raise IOError from err
+                raise OSError from err
         walk_cont.extend(directories)
 
 
@@ -821,18 +863,26 @@ def makedirs(dev: PortableDevice, create_path: str) -> PortableDeviceContent:
         A PortableDeviceContent instance for the last directory in path.
 
     Exceptions:
-        IOError: If something went wrong
+        OSError: If something went wrong
+
+    ATTENTION:
+        Be carefull about Upper-/Lowewrcase filenames. For example Gnome creates internal
+        directories with the same name but other upper-/lowercase settings, but doesnt't
+        store them on the smartphone.
+        For example: there exists a directory 'Download' on the device, if you create a
+        new directory 'download' with makedirs, you see 'download' in the Linux filesystem
+        but NOT on the device and all files stored in 'download' aren't copied to the device.
 
     Examples:
         >>> import mtp.linux_access
         >>> dev = mtp.linux_access.get_portable_devices()
         >>> if os.path.exists(_gvfs_search_path):
-        ...    n = "Android_Android_PLEGAR1791402808/Interner gemeinsamer Speicher/DCIM/Camera/Test"
+        ...    n = "SAMSUNG_SAMSUNG_Android_RFCX50C5CFF/Interner Speicher/Test"
         ... else:
-        ...    n = "Nokia 6_Nokia 6_PLEGAR1791402808/Interner gemeinsamer Speicher/DCIM/Camera/Test"
+        ...    n = "Nokia 6_Nokia 6_PLEGAR1791402808/Interner gemeinsamer Speicher/Test"
         >>> cont = mtp.linux_access.makedirs(dev[0], n)
-        >>> str(cont)
-        'PortableDeviceContent Test (1)'
+        >>> str(cont)[-8:]
+        'Test (1)'
         >>> cont.remove()
         >>> dev[0].close()
     """
@@ -843,22 +893,22 @@ def makedirs(dev: PortableDevice, create_path: str) -> PortableDeviceContent:
             if not os.path.exists(fullpath):
                 os.makedirs(fullpath, exist_ok=True)
             cont = get_content_from_device_path(dev, path)
-        except (IOError, IndexError) as err:
-            raise IOError(f"Error creating directory '{path}': {err.args[1]}") from err
+        except (OSError, IndexError) as err:
+            raise OSError(f"Error creating directory '{path}': {err.args[1]}") from err
         if cont is None:
-            raise IOError(f"Error creating directory '{path}'")
+            raise OSError(f"Error creating directory '{path}'")
     else:
         found_stor = None
         parts = path.split(os.sep)
         if len(parts) <= 2:
-            raise IOError(f"Devicename and or storage are missing in  {path}")
+            raise OSError(f"Devicename and or storage are missing in  {path}")
         storname_to_search = os.path.join(parts[0], parts[1])
         for stor in dev.get_content():
             if stor.full_filename == storname_to_search:
                 found_stor = stor
                 break
         if found_stor is None:
-            raise IOError(f"The storage {storname_to_search} could not be found")
+            raise OSError(f"The storage {storname_to_search} could not be found")
         cont = found_stor
         for pp in parts[2:]:
             par_cont = cont
@@ -872,4 +922,4 @@ if __name__ == "__main__":
     dev = get_portable_devices()
     stor = dev[0].get_content()[0]
     print(str(stor.get_path(f"{stor.full_filename}/DCIM")))
-    print(str(stor.get_path(f"DCIM")))
+    print(str(stor.get_path("DCIM")))

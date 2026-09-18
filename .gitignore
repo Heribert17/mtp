@@ -7,6 +7,7 @@ requirements_other.txt
 mkdocs.yml
 
 .vscode/
+.zed/
 docs/
 tests/
 

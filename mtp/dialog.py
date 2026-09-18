@@ -3,7 +3,7 @@ A module with MTP relevant dialogs for tkinter
 
 Author:  Heribert Füchtenhans
 
-Version: 2025.12.04
+Version: 2026.09.17
 
 Requirements:
     - Python modules
@@ -21,13 +21,12 @@ Examples:
 """
 
 import contextlib
-from dataclasses import dataclass
 import platform
 import tkinter
 import tkinter.simpledialog
+from dataclasses import dataclass
 from tkinter import ttk
-from tkinter.ttk import Button
-from tkinter.ttk import Frame
+from tkinter.ttk import Button, Frame
 from typing import override
 
 if platform.system() == "windows":
@@ -196,9 +195,7 @@ class AskDirectory(tkinter.simpledialog.Dialog):
         if treeid == "":
             self.cancel()
         else:
-            cont: access.PortableDeviceContent | None = (
-                self._tree_entries[treeid].content
-            )
+            cont: access.PortableDeviceContent | None = self._tree_entries[treeid].content
             if cont is None:
                 self.cancel()
                 return
